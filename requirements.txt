@@ -9,7 +9,7 @@ SQLAlchemy
 uvicorn
 passlib
 pytest
-httpx
+httpx<0.28
 pytest-asyncio
 aiofiles
 jinja2
