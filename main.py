@@ -6,6 +6,7 @@ from database import SessionLocal, engine
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
+from router import auth
 
 
 app = FastAPI(title="Expense Tracker API")
@@ -61,6 +62,7 @@ class Token(BaseModel):
 
 
 models.Base.metadata.create_all(bind=engine)
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
 
 def get_db():
