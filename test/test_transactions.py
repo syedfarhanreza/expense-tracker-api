@@ -1,7 +1,8 @@
 from datetime import date
 
 from fastapi import status
-from models import Transaction
+from models import Transaction, User
+from router.auth import bcrypt_context
 from router.auth import get_current_user
 from test.test_main import app, client
 from database import SessionLocal
@@ -9,7 +10,7 @@ from database import SessionLocal
 
 def override_get_current_user():
     return {
-        "id": 1,
+        "id": 99,
         "username": "testuser",
     }
 
@@ -20,6 +21,17 @@ app.dependency_overrides[get_current_user] = override_get_current_user
 def create_test_transaction(transaction_id=99):
     db = SessionLocal()
     try:
+        if db.query(User).filter(User.id == 99).first() is None:
+            db.add(
+                User(
+                    id=99,
+                    username="testuser99",
+                    email="testuser99@example.com",
+                    hashed_password=bcrypt_context.hash("TestPassword99!"),
+                )
+            )
+            db.commit()
+
         db.query(Transaction).filter(
             Transaction.id == transaction_id
         ).delete()
@@ -30,7 +42,7 @@ def create_test_transaction(transaction_id=99):
             type="expense",
             category="Food",
             date=date.today(),
-            owner_id=1,
+            owner_id=99,
         )
         db.add(transaction)
         db.commit()
@@ -71,7 +83,7 @@ def test_create_transaction():
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["title"] == "New Transaction"
-    assert response.json()["owner_id"] == 1
+    assert response.json()["owner_id"] == 99
 
 
 def test_update_transaction():
